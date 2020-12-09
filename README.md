@@ -2,7 +2,7 @@
 
 ## Installation & Setup Instructions
 
-### Prerequesites 
+### Prerequisites 
 
 The installation for this project is fairly straightforward, with the only prerequisites being NodeJS, npm, and the Typescript Compiler.
 
