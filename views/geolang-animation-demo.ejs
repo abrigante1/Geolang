@@ -1,0 +1,176 @@
+<!doctype html>
+<html style="height: 100%;">
+
+<head>
+    <meta name="ac:route" content="/">
+    <base href="/">
+    <script src="dmxAppConnect/dmxAppConnect.js"></script>
+    <meta charset="UTF-8">
+    <title>Geolang Workspace</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="bootstrap/4/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/GeolangStyle.css" />
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.1.9/lib/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.6.3/proj4.js" integrity="sha512-Lhf25V9Dsy2stkzgpsHvLSMxeUCrySL90kb9611B8dffqEmaWEXIOCqHfR7HSr0hgpCsz3fMTS84ZlOxkbw7qQ==" crossorigin="anonymous"></script>
+    <script src="src/P5GeoJSON.js"></script>
+    <script src="js/main.js"></script>
+</head>
+
+<body is="dmx-app" id="index" style="overscroll-behavior: contain;">
+   <header>
+       <h1 class="text-md-center text-sm-center text-center">Geolang Editor</h1>
+   </header>
+   <div class="wappler-block container h-75 mw-100" style="overscroll-behavior: contain;">
+      <div class="row" style="overscroll-behavior: contain;">
+         <button id="Transpile" class="btn">Transpile</button>
+         <button id="Run" class="btn">Run</button>
+         <button id="EditorBtn" class="btn">Empty Editor</button>
+         <button id="AnimDemo" class="btn">Animations Demo</button>
+         <button id="CovidDemo" class="btn">Covid Demo</button>
+      </div>
+      <div class="row h-100 w-100" style="overscroll-behavior: contain;">
+         <div class="border mt-2 mb-2 ml-2 mr-2 rounded-lg border-dark" id="EditorWindow" style="width: 55%"></div>
+         <div class="col-1" id="OutputWindow"></div>
+      </div>
+      <div class="row h-100 w-75">
+         <div class="col border mh-100 w-100 mt-2 mb-2 ml-2 mr-2 rounded-lg border-dark" id="ConsoleWindow"></div>
+     </div>
+   </div>
+
+   <script src="bootstrap/4/js/popper.min.js"></script>
+   <script src="bootstrap/4/js/bootstrap.min.js"></script>
+</body>
+
+<!-- Monaco Implementation -->
+<script src="./public/demos/animation-demo.geo"></script>
+<script src="node_modules/monaco-editor/min/vs/loader.js"></script>
+<script>
+   require.config({ paths: { 'vs': 'node_modules/monaco-editor/min/vs' }});
+
+   require(['vs/editor/editor.main'], function() {
+
+      // Register Geolang With Monaco
+      monaco.languages.register({ id: 'geolang' });
+
+      // Setup Syntax Highlighting
+      monaco.languages.setTokensProvider('geolang', new GeolangMain.GetTokensProvider());
+ 
+       let literalFg = '3b8737';
+       let idFg = '344482';
+       let symbolsFg = '000000';
+       let keywordFg = '7132a8';
+       let dataTypeFg = '3342FF'
+       let errorFg = 'ff0000';
+ 
+       monaco.editor.defineTheme('geolangTheme', {
+          base: 'vs',
+          inherit: true,
+          rules: [ 
+             { token: 'identifier.geolang',           foreground: idFg,       fontStyle: 'italic' },
+             { token: 'stringliteral.geolang', foreground: literalFg, fontStyle: 'italic' },
+
+             { token: 'import.geolang',     foreground: keywordFg,  fontStyle: 'bold' },
+             { token: 'from.geolang',    foreground: keywordFg,  fontStyle: 'bold' },
+             { token: 'as.geolang',    foreground: keywordFg,  fontStyle: 'bold' },
+
+             { token: 'unrecognized.geolang', foreground: errorFg }
+          ]
+       });
+
+      // Create the Editor
+      window.editor = monaco.editor.create(document.getElementById('EditorWindow'), {
+         value: animation_demo_text,
+         language: 'geolang',
+         theme: 'geolangTheme',
+         scrollBeyondLastLine: false,
+         minimap: {
+            enabled: false,
+         },
+      });
+
+      window.terminal = monaco.editor.create(document.getElementById('ConsoleWindow'), {
+         value: [
+            ''
+         ].join('\n'),
+         language: "javascript",
+         theme: "geolangTheme",
+         lineNumbers: "off",
+         readOnly: true,
+         scrollBeyondLastLine: false,
+         minimap: {
+            enabled: false,
+         },
+      });
+
+      console.terminal = (logString) => {
+         window.terminal.getModel().setValue(logString);
+      }
+
+   });
+</script>
+
+<!-- Transpile / Run Functionality -->
+<script>
+   let hasRun = false;
+
+   function Transpile() {
+      let str = GeolangMain.GeolangMain(window.editor.getValue());
+      console.terminal(str);
+   }
+
+   document.getElementById("Transpile").onclick = function(){
+      Transpile();
+   };
+   
+   function Run() {
+
+    
+
+      // Remove all Existing Canvases
+      let existingCanvases = document.getElementsByClassName("p5Canvas");
+      for(let canvas of existingCanvases) {
+
+         // HACK -- Avoid Removing the "Global Canvas"
+         if(canvas.id != "defaultCanvas0") {
+            canvas.remove();
+         }
+      }
+      
+      // HACK -- Create a Global p5 instance to so that p5 variables are available
+      // without explicit support.
+      if(!hasRun) {
+         var geval = this.execScript || eval;
+         geval("new p5();\n function setup() { let canvas = createCanvas(0, 0); canvas.parent('OutputWindow'); }\n"); 
+         hasRun = true;
+      }
+
+      let str = GeolangMain.GeolangMain(window.editor.getValue());
+      console.terminal(str);
+
+
+      Function(str)();
+   }
+
+   document.getElementById("Run").onclick = function(){
+      Run();
+   };
+
+   // -- Button Handling
+   document.getElementById("EditorBtn").onclick = function(){
+      window.location.pathname = '/editor'
+   }
+
+   document.getElementById("CovidDemo").onclick = function(){
+      window.location.pathname = '/covid'
+   }
+
+   document.getElementById("AnimDemo").onclick = function(){
+      window.location.pathname = '/animations'
+   }
+
+
+</script>
+
+</html>

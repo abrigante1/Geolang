@@ -1,0 +1,30 @@
+{
+  "type": "module",
+  "name": "geolangnodeserver",
+  "version": "1.0.0",
+  "description": "",
+  "main": "geolang.js",
+  "scripts": {
+    "antlr-lexer": "antlr4ts ./src/antlr/GeolangLexer.g4 -o ./src/Geolang/",
+    "antlr-parser": "antlr4ts -visitor ./src/antlr/GeolangParser.g4 -o ./src/Geolang/",
+    "antlr": "npm run antlr-lexer && npm run antlr-parser",
+    "compile": "npx tsc && npx webpack --config webpack.config.cjs && node index.cjs",
+    "start": "npm run antlr && npx tsc && npx webpack --config webpack.config.cjs && node index.cjs"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "antlr4": "^4.8.0",
+    "antlr4ts": "^0.5.0-alpha.3",
+    "d3": "^6.2.0",
+    "ejs": "^3.1.5",
+    "express": "^4.17.1",
+    "webpack": "^4.39.2",
+    "webpack-cli": "^3.3.7"
+  },
+  "devDependencies": {
+    "antlr4ts-cli": "^0.5.0-alpha.3",
+    "mocha": "^6.2.0",
+    "monaco-editor": "^0.17.1"
+  }
+}
