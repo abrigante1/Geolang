@@ -65,7 +65,7 @@ Overall, I had a lot of fun with this project, and I certainly learned a lot! Th
 Many of the existing Geolang Features function by supporting a very minimal set of instructions, but allowing the user to supply those instructions whatever arguments they wish, and then just transpiling it regardless. So for example, I did not implement any Geolang Syntax-Level support for P5's "arc" object, instead, I let user pass whatever string they want to the `Model` Command and accept any number of arguments for the `Scale` command. 
 By doing so, I immediately allow support for the "arc" drawing command of p5 with no additional implementation.
 
-However, as it's probably obvious, while this is great for prototyping and quick experimentation, it comes at the cost of having nearly zero effective error checking. During transpile time, there's little way for the transpiler to notice that `Scale` is missing a parameter or has two many, for example.
+However, as it's probably obvious, while this is great for prototyping and quick experimentation, it comes at the cost of having nearly zero effective error checking. During transpile time, there's little way for the transpiler to notice that `Scale` is missing a parameter or has too many, for example.
 
 ### Running Scripts in a Webpage
 
